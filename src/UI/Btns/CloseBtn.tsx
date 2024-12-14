@@ -7,7 +7,7 @@ type CloseBtnProps = IconButtonProps & {
 
 export function CloseBtn({ onClose, ...restProps }: CloseBtnProps) {
   return (
-    <IconButton onClick={onClose} {...restProps}>
+    <IconButton aria-label="close" onClick={onClose} {...restProps}>
       <Close />
     </IconButton>
   );

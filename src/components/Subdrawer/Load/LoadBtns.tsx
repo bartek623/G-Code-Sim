@@ -60,6 +60,7 @@ export function LoadBtns({ updatePrograms, currentPrograms }: LoadBtnsProps) {
     <>
       <DrawerInputContainer>
         <DrawerBtn
+          aria-label="Delete all programs"
           tooltip="Delete all programs"
           color="error"
           onClick={openDialogHandler}>
@@ -67,6 +68,7 @@ export function LoadBtns({ updatePrograms, currentPrograms }: LoadBtnsProps) {
         </DrawerBtn>
 
         <DrawerBtn
+          aria-label="Upload saved programs from JSON file"
           tooltip="Upload saved programs from JSON file"
           component="label">
           <UploadFile />
@@ -74,6 +76,7 @@ export function LoadBtns({ updatePrograms, currentPrograms }: LoadBtnsProps) {
         </DrawerBtn>
 
         <DrawerBtn
+          aria-label="Download saved programs to JSON file"
           tooltip="Download saved programs to JSON file"
           href={`data:text/json;charset=utf-8,${encodeURIComponent(
             JSON.stringify(currentPrograms),

@@ -6,7 +6,7 @@ type DeleteBtnProps = { onClick: () => void };
 export function DeleteBtn({ onClick }: DeleteBtnProps) {
   return (
     <Tooltip title="Delete">
-      <IconButton color="error" onClick={onClick}>
+      <IconButton aria-label="delete" color="error" onClick={onClick}>
         <DeleteOutline />
       </IconButton>
     </Tooltip>
