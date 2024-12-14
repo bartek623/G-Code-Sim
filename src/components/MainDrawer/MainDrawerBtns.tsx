@@ -88,6 +88,7 @@ export function MainDrawerBtns({
   return (
     <DrawerInputContainer padding={1} paddingX={3}>
       <ListMenuBtn
+        aria-label="Add/remove lines numbering"
         tooltip="Add/remove lines numbering"
         listItems={[
           {
@@ -105,6 +106,7 @@ export function MainDrawerBtns({
       </ListMenuBtn>
 
       <ListMenuBtn
+        aria-label="3D model"
         tooltip="3D model"
         listItems={[
           { action: onShowGeo, icon: <ViewInAr />, text: 'Show 3D model' },
@@ -123,6 +125,7 @@ export function MainDrawerBtns({
       </ListMenuBtn>
 
       <ListMenuBtn
+        aria-label="Save/load program"
         tooltip="Save/load program"
         listItems={[
           { action: onSaveHandler, icon: <Save />, text: 'Save' },
@@ -131,7 +134,7 @@ export function MainDrawerBtns({
         <Folder />
       </ListMenuBtn>
 
-      <DrawerBtn tooltip="Run program" onClick={onRun}>
+      <DrawerBtn aria-label="Run program" tooltip="Run program" onClick={onRun}>
         <PlayArrow />
       </DrawerBtn>
     </DrawerInputContainer>

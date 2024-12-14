@@ -12,7 +12,7 @@ type MenuBtnProps = { onClick: () => void };
 
 export function MenuBtn({ onClick }: MenuBtnProps) {
   return (
-    <StyledIconBtn onClick={onClick} color="primary">
+    <StyledIconBtn aria-label="menu" onClick={onClick} color="primary">
       <Menu fontSize="large" />
     </StyledIconBtn>
   );

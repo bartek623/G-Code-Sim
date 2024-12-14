@@ -8,7 +8,7 @@ type InfoBtnProps = {
 export function InfoBtn({ onClick }: InfoBtnProps) {
   return (
     <Tooltip title="More info">
-      <IconButton onClick={onClick}>
+      <IconButton aria-label="more info" onClick={onClick}>
         <InfoOutlined />
       </IconButton>
     </Tooltip>
