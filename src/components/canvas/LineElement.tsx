@@ -1,15 +1,39 @@
 import { useFrame } from '@react-three/fiber';
-import { useGeometryContext } from '@store';
-import { LINE_TYPE } from '@utils';
-import { Vector2 } from 'three';
-import { LINE_ANIMATION_RATE } from './constants';
-import { LineSegment } from './LineSegment';
-import { LineElementType } from './types';
-import { getCurvePoints, lineAnimation } from './utils';
+import { CylinderSizeType, LINE_TYPE, LineDataType } from '@utils';
+import { Dispatch, memo, SetStateAction, useRef } from 'react';
+import {
+  BufferGeometry,
+  Group,
+  LineBasicMaterial,
+  Line,
+  Vector2,
+  BufferAttribute,
+  LineDashedMaterial,
+  Mesh,
+} from 'three';
+import {
+  DASH_SIZE,
+  GAP_SIZE,
+  LINE_ANIMATION_RATE,
+  LINE_COLOR,
+  POSITION_LINE_COLOR,
+} from './constants';
+import { GeoPointType, LineElementType, POINT_TYPE, PointType } from './types';
+import { getCurrentPoint, getCurvePoints } from './utils';
 
-export const LineElement = () => {
-  const { geometryRef, lines: linesData } = useGeometryContext();
-  const geometryPoints: Vector2[] = [];
+type LineElementProps = {
+  updateLathePoints: Dispatch<SetStateAction<Vector2[]>>;
+  linesData: LineDataType[];
+  cylinderSize: CylinderSizeType;
+};
+
+export const LineElement = ({
+  updateLathePoints,
+  linesData,
+  cylinderSize,
+}: LineElementProps) => {
+  const linesGroupRef = useRef<Group>(null!);
+  const geometryPoints: GeoPointType[] = [];
   const lines: LineElementType[] = [];
 
   let animationLength = 0;
@@ -22,7 +46,9 @@ export const LineElement = () => {
 
     if (type === LINE_TYPE.ARC) {
       const { curvePoints, curveLength } = getCurvePoints(lineData);
-      geometryPoints.push(...curvePoints);
+      geometryPoints.push(
+        ...curvePoints.map((point) => ({ point, type: POINT_TYPE.GEO })),
+      );
 
       lines.push({
         points: curvePoints,
@@ -34,8 +60,16 @@ export const LineElement = () => {
 
       animationLength += curveLength;
     } else {
-      if (type !== LINE_TYPE.POSITIONING)
-        geometryPoints.push(...[startPoint, endPoint]);
+      if (type === LINE_TYPE.POSITIONING)
+        geometryPoints.push(
+          { point: startPoint, type: POINT_TYPE.POS },
+          { point: endPoint, type: POINT_TYPE.POS },
+        );
+      else
+        geometryPoints.push(
+          { point: startPoint, type: POINT_TYPE.GEO },
+          { point: endPoint, type: POINT_TYPE.GEO },
+        );
 
       const lineLength = startPoint.distanceTo(endPoint);
       lines.push({
@@ -50,23 +84,80 @@ export const LineElement = () => {
     }
   });
 
+  updateLathePoints([]);
+
+  const lastPoint = { x: -Infinity, y: -Infinity };
+  let lastType: PointType | undefined = undefined;
+
+  // remove lines before animation
+  while (linesGroupRef.current?.children.length > 0) {
+    const child = linesGroupRef.current.children[0] as Mesh;
+    child.geometry.dispose();
+    linesGroupRef.current.remove(child);
+  }
+
   useFrame(() => {
-    if (animationProgress > animationLength) return;
+    if (animationProgress > animationLength || !lines.length) return;
+
+    const [currentPoint, currentPointType] = getCurrentPoint(
+      geometryPoints,
+      animationProgress,
+    );
+
+    // Points for lines (2D)
+    if (lastType === currentPointType) {
+      const lastLine = linesGroupRef.current.children.at(-1) as Line;
+
+      if (lastLine?.type === 'Line') {
+        const currentPoints = lastLine.geometry.attributes.position.array;
+        const newPoints = new Float32Array(currentPoints.length + 3);
+        newPoints.set([...currentPoints, ...currentPoint, 0]);
+
+        lastLine.geometry.setAttribute(
+          'position',
+          new BufferAttribute(newPoints, 3),
+        );
+
+        lastLine.geometry.computeBoundingSphere();
+        lastLine.computeLineDistances();
+      }
+    } else {
+      lastType = currentPointType;
+      const geometry = new BufferGeometry().setFromPoints([currentPoint]);
+      const material =
+        currentPointType === POINT_TYPE.GEO
+          ? new LineBasicMaterial({ color: LINE_COLOR })
+          : new LineDashedMaterial({
+              color: POSITION_LINE_COLOR,
+              dashSize: DASH_SIZE,
+              gapSize: GAP_SIZE,
+            });
+
+      const line = new Line(geometry, material);
+      line.computeLineDistances();
+      linesGroupRef.current.add(line);
+    }
+
+    // Point for lathing (3D model)
+    if (
+      currentPoint.x <= cylinderSize.length &&
+      currentPointType === POINT_TYPE.GEO
+    ) {
+      const x = currentPoint.x;
+      const y = Math.min(currentPoint.y, cylinderSize.radius);
+      if (lastPoint.x !== x || lastPoint.y !== y)
+        updateLathePoints((prev) => [...prev, new Vector2(x, y)]);
+
+      lastPoint.x = x;
+      lastPoint.y = y;
+    }
 
     const rate = animationLength / LINE_ANIMATION_RATE;
-
-    geometryRef.current?.children
-      .filter((object) => object.type === 'Line2')
-      .forEach(lineAnimation(lines, animationProgress, rate));
 
     animationProgress += rate;
   });
 
-  return (
-    <group ref={geometryRef}>
-      {lines.map((line) => {
-        return <LineSegment key={Math.random()} line={line} />;
-      })}
-    </group>
-  );
+  return <group ref={linesGroupRef} />;
 };
+
+export const LineElementMemo = memo(LineElement);

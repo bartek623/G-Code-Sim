@@ -4,7 +4,7 @@ import {
   NotificationInfoType,
   SnackbarStateType,
 } from '@UI';
-import { createContext, ReactNode, useRef, useState } from 'react';
+import { createContext, ReactNode, useCallback, useRef, useState } from 'react';
 
 export type NotificationsContextType = {
   pushNotification: (notification: NotificationInfoType) => void;
@@ -37,7 +37,7 @@ export const NotificationsStore = ({ children }: NotificationsStoreProps) => {
     setSnackbarState((prev) => ({ ...prev, open: false }));
   };
 
-  const pushNotification = (notification: NotificationInfoType) => {
+  const pushNotification = useCallback((notification: NotificationInfoType) => {
     clearTimeout(timerRef.current);
 
     timerRef.current = setTimeout(
@@ -48,7 +48,7 @@ export const NotificationsStore = ({ children }: NotificationsStoreProps) => {
     );
 
     setSnackbarState({ ...notification, open: true });
-  };
+  }, []);
 
   return (
     <NotificationsContext.Provider

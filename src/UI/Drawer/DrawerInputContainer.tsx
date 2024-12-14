@@ -1,14 +1,14 @@
 import { Stack, StackProps } from '@mui/material';
 import { ReactNode } from 'react';
 
-type DrawerBtnContainerProps = StackProps & {
+type DrawerInputContainerProps = StackProps & {
   children: ReactNode | ReactNode[];
 };
 
-export function DrawerBtnContainer({
+export function DrawerInputContainer({
   children,
   ...restProps
-}: DrawerBtnContainerProps) {
+}: DrawerInputContainerProps) {
   return (
     <Stack direction="row" spacing={0.4} marginTop="auto" {...restProps}>
       {children}

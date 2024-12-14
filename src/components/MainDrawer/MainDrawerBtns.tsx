@@ -7,10 +7,16 @@ import {
   Remove,
   Save,
   Upload,
+  VideoStable,
   ViewInAr,
 } from '@mui/icons-material';
-import { useGeometryContext } from '@store';
-import { DrawerBtn, DrawerBtnContainer, ListMenuBtn } from '@UI';
+import { useGeometryContext, useNotificationsContext } from '@store';
+import {
+  DrawerBtn,
+  DrawerInputContainer,
+  ListMenuBtn,
+  NOTIFICATION_TYPES,
+} from '@UI';
 import { STLExporter } from 'three/examples/jsm/Addons.js';
 import { SUBDRAWER_MODES, subdrawerModesType } from './constants';
 
@@ -18,7 +24,6 @@ type DrawerBtnsProps = {
   onAddNumbering: () => void;
   onRemoveNumbering: () => void;
   onRun: () => void;
-  onShowGeo: () => void;
   onSubOpen: (mode: subdrawerModesType) => void;
 };
 
@@ -26,10 +31,29 @@ export function MainDrawerBtns({
   onAddNumbering,
   onRemoveNumbering,
   onRun,
-  onShowGeo,
   onSubOpen,
 }: DrawerBtnsProps) {
-  const { geometryRef, showGeometry } = useGeometryContext();
+  const { geometryRef, setShowGeometry, setShowWorkpiece } =
+    useGeometryContext();
+  const { pushNotification } = useNotificationsContext();
+
+  const onShowGeo = () => {
+    setShowGeometry((prev) => {
+      const msg = `${prev ? 'Hiding' : 'Showing'} model`;
+      pushNotification({ message: msg, type: NOTIFICATION_TYPES.info });
+
+      return !prev;
+    });
+  };
+
+  const onShowWorkpiece = () => {
+    setShowWorkpiece((prev) => {
+      const msg = `${prev ? 'Hiding' : 'Showing'} workpiece`;
+      pushNotification({ message: msg, type: NOTIFICATION_TYPES.info });
+
+      return !prev;
+    });
+  };
 
   const onSaveHandler = () => {
     onSubOpen(SUBDRAWER_MODES.save);
@@ -40,7 +64,13 @@ export function MainDrawerBtns({
   };
 
   const onExportSTL = () => {
-    if (!geometryRef.current) return;
+    if (!geometryRef.current) {
+      pushNotification({
+        message: 'This action requires 3D view. Please enable it to proceed.',
+        type: NOTIFICATION_TYPES.error,
+      });
+      return;
+    }
 
     const exporter = new STLExporter();
     const result = exporter.parse(geometryRef.current);
@@ -56,7 +86,7 @@ export function MainDrawerBtns({
   };
 
   return (
-    <DrawerBtnContainer padding={1} paddingX={3}>
+    <DrawerInputContainer padding={1} paddingX={3}>
       <ListMenuBtn
         tooltip="Add/remove lines numbering"
         listItems={[
@@ -74,19 +104,23 @@ export function MainDrawerBtns({
         <FormatListNumbered />
       </ListMenuBtn>
 
-      <DrawerBtn
-        tooltip="Show 3D model"
-        onClick={onShowGeo}
-        variant={showGeometry ? 'outlined' : 'contained'}>
+      <ListMenuBtn
+        tooltip="3D model"
+        listItems={[
+          { action: onShowGeo, icon: <ViewInAr />, text: 'Show 3D model' },
+          {
+            action: onShowWorkpiece,
+            icon: <VideoStable />,
+            text: 'Toggle workpiece',
+          },
+          {
+            action: onExportSTL,
+            icon: <FileDownload />,
+            text: 'Export to .stl',
+          },
+        ]}>
         <ViewInAr />
-      </DrawerBtn>
-
-      <DrawerBtn
-        disabled={!showGeometry}
-        tooltip="Export model to .stl file"
-        onClick={onExportSTL}>
-        <FileDownload />
-      </DrawerBtn>
+      </ListMenuBtn>
 
       <ListMenuBtn
         tooltip="Save/load program"
@@ -100,6 +134,6 @@ export function MainDrawerBtns({
       <DrawerBtn tooltip="Run program" onClick={onRun}>
         <PlayArrow />
       </DrawerBtn>
-    </DrawerBtnContainer>
+    </DrawerInputContainer>
   );
 }

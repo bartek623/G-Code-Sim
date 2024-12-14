@@ -1,7 +1,7 @@
 import { Delete, Download, UploadFile } from '@mui/icons-material';
 import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import { useNotificationsContext } from '@store';
-import { DrawerBtn, DrawerBtnContainer, NOTIFICATION_TYPES } from '@UI';
+import { DrawerBtn, DrawerInputContainer, NOTIFICATION_TYPES } from '@UI';
 import { ChangeEvent, useState } from 'react';
 import { savedType } from '../types';
 import { readUploadedFile } from '../utils';
@@ -58,7 +58,7 @@ export function LoadBtns({ updatePrograms, currentPrograms }: LoadBtnsProps) {
 
   return (
     <>
-      <DrawerBtnContainer>
+      <DrawerInputContainer>
         <DrawerBtn
           tooltip="Delete all programs"
           color="error"
@@ -81,7 +81,7 @@ export function LoadBtns({ updatePrograms, currentPrograms }: LoadBtnsProps) {
           download="GCodePrograms.json">
           <Download />
         </DrawerBtn>
-      </DrawerBtnContainer>
+      </DrawerInputContainer>
 
       <Dialog open={openDialog} onClose={closeDialogHandler}>
         <DialogTitle>

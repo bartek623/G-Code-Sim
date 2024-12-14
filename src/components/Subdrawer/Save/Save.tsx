@@ -1,7 +1,7 @@
 import { TextField, Typography, styled } from '@mui/material';
 
 import { useNotificationsContext } from '@store';
-import { NOTIFICATION_TYPES, DrawerBtnContainer, DrawerBtn } from '@UI';
+import { NOTIFICATION_TYPES, DrawerInputContainer, DrawerBtn } from '@UI';
 import { showError } from '@utils';
 import { FormEvent, useEffect, useRef } from 'react';
 import { SubdrawerContainer } from '../SubdrawerContentContainer';
@@ -75,11 +75,11 @@ export function Save({ program, onClose }: SaveProps) {
       />
       <StyledTypography paragraph>{program}</StyledTypography>
 
-      <DrawerBtnContainer>
+      <DrawerInputContainer>
         <DrawerBtn tooltip="Save to browser local storage" type="submit">
           Save
         </DrawerBtn>
-      </DrawerBtnContainer>
+      </DrawerInputContainer>
     </SubdrawerContainer>
   );
 }

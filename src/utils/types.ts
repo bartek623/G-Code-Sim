@@ -24,3 +24,5 @@ export type LineDataType = LinesType & {
   end: PointType;
   start: PointType;
 };
+
+export type CylinderSizeType = { radius: number; length: number };

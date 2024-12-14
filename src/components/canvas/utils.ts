@@ -1,7 +1,7 @@
 import { LINE_TYPE, LineDataType } from '@utils';
-import { EllipseCurve, Object3D } from 'three';
+import { EllipseCurve, Object3D, Vector2 } from 'three';
 import { CURVE_POINTS, DASH_SIZE, GAP_SIZE } from './constants';
-import { LineElementType } from './types';
+import { GeoPointType, LineElementType, POINT_TYPE, PointType } from './types';
 
 export const getCurvePoints = (lineData: LineDataType) => {
   if (lineData.type !== LINE_TYPE.ARC)
@@ -51,3 +51,46 @@ export const lineAnimation =
       }
     }
   };
+
+export const getCurrentPoint = (
+  points: GeoPointType[],
+  progress: number,
+): [Vector2, PointType] => {
+  let startPoint: Vector2 | undefined;
+  let endPoint: Vector2 | undefined;
+  let currentPoint: Vector2 | undefined;
+  let length = 0;
+  let prevLength = 0;
+  let pointType: PointType = POINT_TYPE.GEO;
+
+  for (const [i, { point, type }] of points.entries()) {
+    if (!points[i + 1]) return [point, type];
+
+    length += point.distanceTo(points[i + 1].point);
+    pointType = type;
+
+    if (length >= progress) {
+      startPoint = point;
+      endPoint = points[i + 1].point;
+      break;
+    } else prevLength = length;
+  }
+
+  if (!startPoint || !endPoint)
+    throw new Error('Cannot evaluate tool animation [no points]');
+
+  const currentProgress = progress - prevLength;
+  const currentLength = length - prevLength;
+  const lineProgress = currentProgress / currentLength;
+
+  if (currentProgress <= 0) currentPoint = startPoint.clone();
+  else if (currentLength - currentProgress < 0.05)
+    currentPoint = endPoint.clone();
+  else currentPoint = startPoint.clone().lerp(endPoint, lineProgress);
+
+  return [currentPoint, pointType];
+};
+
+export const prepareLathePoint = (point: Vector2) => {
+  return point.clone().rotateAround(new Vector2(0, 0), Math.PI / 2);
+};

@@ -154,6 +154,7 @@ const readCommands =
 export const convertProgramToLinesData = (
   program: string,
   warningFn: (msg: string) => void = () => {},
+  startingPoint: PointType,
 ): LineDataType[] | undefined => {
   if (!program.length) return;
   if (program.includes('M')) warningFn(ERROR_MSG.M);
@@ -161,7 +162,7 @@ export const convertProgramToLinesData = (
   const programLines = program
     .split('\n')
     .filter((line) => !line.includes('M') && line.trim().length);
-  const currentToolPosition: PointType = { x: 0, z: 0 };
+  const currentToolPosition: PointType = { ...startingPoint };
   const prevValues = {
     x: 0,
     z: 0,
