@@ -154,7 +154,7 @@ const readCommands =
 export const convertProgramToLinesData = (
   program: string,
   warningFn: (msg: string) => void = () => {},
-  startingPoint: PointType,
+  startingPoint: PointType = { x: 0, z: 0 },
 ): LineDataType[] | undefined => {
   if (!program.length) return;
   if (program.includes('M')) warningFn(ERROR_MSG.M);
