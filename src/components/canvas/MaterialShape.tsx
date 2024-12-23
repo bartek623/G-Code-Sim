@@ -44,7 +44,7 @@ function ThreeDView({ radius, length, points }: ThreeDViewProps) {
 
   // align last point to workpiece
   const lastPoint = points.at(-1);
-  if (lastPoint && length - lastPoint.x < 0.05) lastPoint.x = length;
+  if (lastPoint && length - lastPoint.x < 0.1) lastPoint.x = length;
 
   // add rest of the workpiece beyond tool path
   if (!points.find((point) => point.x >= length))

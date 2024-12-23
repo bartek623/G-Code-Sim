@@ -37,6 +37,7 @@ export function Subdrawer({
 
   return (
     <Drawer
+      disableRestoreFocus
       label={SUBDRAWER_LABEL[state.mode]}
       onClose={onClose}
       isOpen={state.open}

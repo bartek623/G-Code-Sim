@@ -9,7 +9,6 @@ import {
   Vector2,
   BufferAttribute,
   LineDashedMaterial,
-  Mesh,
 } from 'three';
 import {
   DASH_SIZE,
@@ -19,7 +18,7 @@ import {
   POSITION_LINE_COLOR,
 } from './constants';
 import { GeoPointType, LineElementType, POINT_TYPE, PointType } from './types';
-import { getCurrentPoint, getCurvePoints } from './utils';
+import { clearToolPathLines, getCurrentPoint, getCurvePoints } from './utils';
 
 type LineElementProps = {
   updateLathePoints: Dispatch<SetStateAction<Vector2[]>>;
@@ -44,7 +43,12 @@ export const LineElement = ({
     const startPoint = new Vector2(start.x, start.z);
     const endPoint = new Vector2(end.x, end.z);
 
-    if (type === LINE_TYPE.ARC) {
+    if (type === LINE_TYPE.REPOSITION) {
+      geometryPoints.push({
+        point: startPoint,
+        type: POINT_TYPE.REPOS,
+      });
+    } else if (type === LINE_TYPE.ARC) {
       const { curvePoints, curveLength } = getCurvePoints(lineData);
       geometryPoints.push(
         ...curvePoints.map((point) => ({ point, type: POINT_TYPE.GEO })),
@@ -90,19 +94,31 @@ export const LineElement = ({
   let lastType: PointType | undefined = undefined;
 
   // remove lines before animation
-  while (linesGroupRef.current?.children.length > 0) {
-    const child = linesGroupRef.current.children[0] as Mesh;
-    child.geometry.dispose();
-    linesGroupRef.current.remove(child);
-  }
+  clearToolPathLines(linesGroupRef.current);
 
   useFrame(() => {
     if (animationProgress > animationLength || !lines.length) return;
 
-    const [currentPoint, currentPointType] = getCurrentPoint(
+    const [currentPoint, currentPointType, reposition] = getCurrentPoint(
       geometryPoints,
       animationProgress,
     );
+
+    // Reposition workpiece
+    if (reposition) {
+      clearToolPathLines(linesGroupRef.current);
+      lastType = undefined;
+      updateLathePoints((prev) =>
+        prev
+          .map((point) =>
+            point.rotateAround(
+              new Vector2(cylinderSize.length / 2, point.y),
+              Math.PI,
+            ),
+          )
+          .reverse(),
+      );
+    }
 
     // Points for lines (2D)
     if (lastType === currentPointType) {
@@ -122,7 +138,6 @@ export const LineElement = ({
         lastLine.computeLineDistances();
       }
     } else {
-      lastType = currentPointType;
       const geometry = new BufferGeometry().setFromPoints([currentPoint]);
       const material =
         currentPointType === POINT_TYPE.GEO
@@ -137,6 +152,8 @@ export const LineElement = ({
       line.computeLineDistances();
       linesGroupRef.current.add(line);
     }
+
+    lastType = currentPointType;
 
     // Point for lathing (3D model)
     if (

@@ -1,5 +1,5 @@
 import { LINE_TYPE, LineDataType } from '@utils';
-import { EllipseCurve, Object3D, Vector2 } from 'three';
+import { EllipseCurve, Group, Mesh, Object3D, Vector2 } from 'three';
 import { CURVE_POINTS, DASH_SIZE, GAP_SIZE } from './constants';
 import { GeoPointType, LineElementType, POINT_TYPE, PointType } from './types';
 
@@ -52,28 +52,48 @@ export const lineAnimation =
     }
   };
 
+let REPOSITIONED = true;
 export const getCurrentPoint = (
   points: GeoPointType[],
   progress: number,
-): [Vector2, PointType] => {
+): [Vector2, PointType, boolean] => {
   let startPoint: Vector2 | undefined;
   let endPoint: Vector2 | undefined;
   let currentPoint: Vector2 | undefined;
   let length = 0;
   let prevLength = 0;
   let pointType: PointType = POINT_TYPE.GEO;
+  let reposition = false;
 
-  for (const [i, { point, type }] of points.entries()) {
-    if (!points[i + 1]) return [point, type];
+  for (let i = 0; i < points.length; i++) {
+    const { point, type } = points[i];
+
+    // if (type === POINT_TYPE.REPOS) {
+    //   console.log(type, prevLength, progress);
+    // }
+
+    if (!points[i + 1]) return [point, type, false];
 
     length += point.distanceTo(points[i + 1].point);
     pointType = type;
 
     if (length >= progress) {
+      // Reposition workpiece before current line
+      if (points[i - 1]?.type === POINT_TYPE.REPOS && !REPOSITIONED) {
+        REPOSITIONED = reposition = true;
+      }
+
       startPoint = point;
       endPoint = points[i + 1].point;
+
+      // Set to reposition (flip) workpiece before next line
+      if (points[i + 2]?.type === POINT_TYPE.REPOS) {
+        REPOSITIONED = false;
+      }
       break;
-    } else prevLength = length;
+    } else {
+      prevLength = length;
+    }
   }
 
   if (!startPoint || !endPoint)
@@ -88,9 +108,17 @@ export const getCurrentPoint = (
     currentPoint = endPoint.clone();
   else currentPoint = startPoint.clone().lerp(endPoint, lineProgress);
 
-  return [currentPoint, pointType];
+  return [currentPoint, pointType, reposition];
 };
 
 export const prepareLathePoint = (point: Vector2) => {
   return point.clone().rotateAround(new Vector2(0, 0), Math.PI / 2);
+};
+
+export const clearToolPathLines = (linesGroup: Group) => {
+  while (linesGroup?.children.length > 0) {
+    const child = linesGroup.children[0] as Mesh;
+    child.geometry.dispose();
+    linesGroup.remove(child);
+  }
 };

@@ -14,6 +14,10 @@ export const GCODE_CMD = {
   M: 'M',
 } as const;
 
+export const CUSTOM_CMD = {
+  REPOSITION: '-- REPOSITION --',
+} as const;
+
 export const GCODE = {
   POSITIONING: 0,
   LINE: 1,

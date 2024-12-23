@@ -12,6 +12,7 @@ export type LineElementType = {
 export const POINT_TYPE = {
   GEO: 'geo',
   POS: 'pos',
+  REPOS: 'repos',
 } as const;
 
 export type PointType = ValuesType<typeof POINT_TYPE>;

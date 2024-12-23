@@ -1,5 +1,5 @@
 import { LineDataType, LINE_TYPE, PointType, LineType } from '@utils';
-import { ERROR_MSG, GCODE, GCODE_CMD } from './constants';
+import { CUSTOM_CMD, ERROR_MSG, GCODE, GCODE_CMD } from './constants';
 
 type LinePropsType = {
   type: LineType | undefined;
@@ -192,6 +192,14 @@ export const convertProgramToLinesData = (
     if (!commandLine.includes('N')) {
       lineProps.lineNumber = prevValues.n =
         Math.ceil((prevValues.n + 1) / 10) * 10;
+    }
+
+    if (commandLine === CUSTOM_CMD.REPOSITION) {
+      return {
+        type: LINE_TYPE.REPOSITION,
+        start: startingPoint,
+        end: startingPoint,
+      };
     }
 
     try {
