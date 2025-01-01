@@ -68,10 +68,6 @@ export const getCurrentPoint = (
   for (let i = 0; i < points.length; i++) {
     const { point, type } = points[i];
 
-    // if (type === POINT_TYPE.REPOS) {
-    //   console.log(type, prevLength, progress);
-    // }
-
     if (!points[i + 1]) return [point, type, false];
 
     length += point.distanceTo(points[i + 1].point);
@@ -104,8 +100,7 @@ export const getCurrentPoint = (
   const lineProgress = currentProgress / currentLength;
 
   if (currentProgress <= 0) currentPoint = startPoint.clone();
-  else if (currentLength - currentProgress < 0.05)
-    currentPoint = endPoint.clone();
+  else if (currentLength - currentProgress < 2) currentPoint = endPoint.clone();
   else currentPoint = startPoint.clone().lerp(endPoint, lineProgress);
 
   return [currentPoint, pointType, reposition];

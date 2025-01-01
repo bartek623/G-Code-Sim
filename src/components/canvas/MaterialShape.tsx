@@ -8,14 +8,9 @@ import {
 } from './constants';
 import { prepareLathePoint } from './utils';
 import { useGeometryContext } from '@/store';
-import { PointType } from '@/utils';
 
 type MaterialShapeProps = {
   latheState: Vector2[];
-};
-
-type StartingPointProps = {
-  position: PointType;
 };
 
 type TwoDViewProps = {
@@ -70,14 +65,13 @@ function ThreeDView({ radius, length, points }: ThreeDViewProps) {
       </Lathe>
       {showWorkpiece && (
         <Cylinder
-          args={[
-            radius - TRANSPARENT_MATERIAL_OFFSET,
-            radius - TRANSPARENT_MATERIAL_OFFSET,
-            length - TRANSPARENT_MATERIAL_OFFSET * 5,
-          ]}
+          args={[radius, radius, length]}
           rotation={[0, 0, -Math.PI / 2]}
           position={[length / 2, 0, 0]}>
           <meshStandardMaterial
+            polygonOffset
+            polygonOffsetFactor={TRANSPARENT_MATERIAL_OFFSET}
+            polygonOffsetUnits={TRANSPARENT_MATERIAL_OFFSET}
             color={STEEL_COLOR}
             transparent={true}
             opacity={TRANSPARENT_MATERIAL_OPACITY}
@@ -103,16 +97,20 @@ function TwoDView({ radius, length }: TwoDViewProps) {
   );
 }
 
-function StartingPoint({ position }: StartingPointProps) {
+function StartingPoint() {
+  const { startingPoint, startingPointRef } = useGeometryContext();
+
   return (
-    <Points positions={new Float32Array([position.x, position.z, 0])}>
-      <pointsMaterial size={0.1} color={'#1976d2'} />
+    <Points
+      ref={startingPointRef}
+      positions={new Float32Array([startingPoint.x, startingPoint.z, 0])}>
+      <pointsMaterial size={3} color={'#1976d2'} />
     </Points>
   );
 }
 
 export function MaterialShape({ latheState }: MaterialShapeProps) {
-  const { cylinderSize, showGeometry, startingPoint } = useGeometryContext();
+  const { cylinderSize, showGeometry } = useGeometryContext();
 
   if (!cylinderSize.radius || !cylinderSize.length) return;
 
@@ -126,7 +124,7 @@ export function MaterialShape({ latheState }: MaterialShapeProps) {
         />
       )}
       <TwoDView radius={cylinderSize.radius} length={cylinderSize.length} />
-      <StartingPoint position={startingPoint} />
+      <StartingPoint />
     </>
   );
 }
