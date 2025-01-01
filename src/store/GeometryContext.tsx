@@ -9,11 +9,14 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Mesh } from 'three';
+import { Mesh, Points } from 'three';
 
 const TOOL_STARTING_OFFSET_MULTIPLIER = 1.5;
+const WORKPIECE_DEFAULT_RADIUS = 48;
+const WORKPIECE_DEFAULT_LENGTH = 256;
 
 const geometryRef = createRef<Mesh>();
+const startingPointRef = createRef<Points>();
 
 export type GeometryContextType = {
   showGeometry: boolean;
@@ -27,6 +30,7 @@ export type GeometryContextType = {
   setRadius: (radius: number) => void;
   setLength: (length: number) => void;
   startingPoint: PointType;
+  startingPointRef: RefObject<Points>;
 };
 
 export const GeometryContext = createContext<GeometryContextType | undefined>(
@@ -40,7 +44,10 @@ type GeometryStoreProps = {
 export const GeometryStore = ({ children }: GeometryStoreProps) => {
   const [showGeometry, setShowGeometry] = useState(false);
   const [showWorkpiece, setShowWorkpiece] = useState(true);
-  const [cylinderSize, setCylinderSize] = useState({ radius: 2, length: 6 });
+  const [cylinderSize, setCylinderSize] = useState({
+    radius: WORKPIECE_DEFAULT_RADIUS,
+    length: WORKPIECE_DEFAULT_LENGTH,
+  });
   const [lines, setLines] = useState<LineDataType[]>([]);
 
   const setRadius = (radius: number) => {
@@ -50,13 +57,13 @@ export const GeometryStore = ({ children }: GeometryStoreProps) => {
     setCylinderSize((prev) => ({ ...prev, length }));
   };
 
-  const startingPoint: PointType = useMemo(
-    () => ({
+  const startingPoint: PointType = useMemo(() => {
+    startingPointRef.current?.geometry.computeBoundingSphere();
+    return {
       x: cylinderSize.length * TOOL_STARTING_OFFSET_MULTIPLIER,
       z: cylinderSize.radius * TOOL_STARTING_OFFSET_MULTIPLIER,
-    }),
-    [cylinderSize],
-  );
+    };
+  }, [cylinderSize]);
 
   return (
     <GeometryContext.Provider
@@ -72,6 +79,7 @@ export const GeometryStore = ({ children }: GeometryStoreProps) => {
         setRadius,
         setLength,
         startingPoint,
+        startingPointRef,
       }}>
       {children}
     </GeometryContext.Provider>

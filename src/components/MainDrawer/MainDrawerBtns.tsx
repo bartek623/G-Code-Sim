@@ -6,6 +6,7 @@ import {
   PlayArrow,
   Remove,
   Save,
+  SwapHoriz,
   Upload,
   VideoStable,
   ViewInAr,
@@ -23,6 +24,7 @@ import { SUBDRAWER_MODES, subdrawerModesType } from './constants';
 type DrawerBtnsProps = {
   onAddNumbering: () => void;
   onRemoveNumbering: () => void;
+  onReposition: () => void;
   onRun: () => void;
   onSubOpen: (mode: subdrawerModesType) => void;
 };
@@ -30,6 +32,7 @@ type DrawerBtnsProps = {
 export function MainDrawerBtns({
   onAddNumbering,
   onRemoveNumbering,
+  onReposition,
   onRun,
   onSubOpen,
 }: DrawerBtnsProps) {
@@ -123,6 +126,13 @@ export function MainDrawerBtns({
         ]}>
         <ViewInAr />
       </ListMenuBtn>
+
+      <DrawerBtn
+        aria-label="Reposition"
+        tooltip="Reposition"
+        onClick={onReposition}>
+        <SwapHoriz />
+      </DrawerBtn>
 
       <ListMenuBtn
         aria-label="Save/load program"

@@ -1,4 +1,5 @@
 export const LINE_TYPE = {
+  REPOSITION: 'reposition',
   POSITIONING: 'positioning',
   LINE: 'line',
   ARC: 'arc',
@@ -12,7 +13,7 @@ export type PointType = { x: number; z: number };
 
 export type LinesType =
   | {
-      type: 'positioning' | 'line';
+      type: 'positioning' | 'line' | 'reposition';
     }
   | {
       type: 'arc';

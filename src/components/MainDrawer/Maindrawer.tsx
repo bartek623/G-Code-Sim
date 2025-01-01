@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Subdrawer } from '../Subdrawer';
 import {
+  CUSTOM_CMD,
   MAINDRAWER_LABEL,
   SUBDRAWER_DEFAULT,
   SUBDRAWER_MODES,
@@ -90,6 +91,25 @@ export function Maindrawer({ isOpen, onClose }: DrawerProps) {
     });
   };
 
+  const repositionHandler = () => {
+    const program = (textFieldRef.current.value as string).trim();
+    const instructions = program.split('\n');
+
+    if (!program) return;
+
+    if (instructions.at(-1) === CUSTOM_CMD.REPOSITION) {
+      instructions.pop();
+      textFieldRef.current.value = instructions.join('\n');
+    } else {
+      textFieldRef.current.value = program + '\n' + CUSTOM_CMD.REPOSITION;
+    }
+
+    pushNotification({
+      message: 'Item repositioning',
+      type: NOTIFICATION_TYPES.info,
+    });
+  };
+
   const openSubHandler = (mode: subdrawerModesType) => {
     setSubdrawer({ open: true, mode: SUBDRAWER_MODES[mode] });
   };
@@ -118,6 +138,7 @@ export function Maindrawer({ isOpen, onClose }: DrawerProps) {
       <MainDrawerBtns
         onAddNumbering={addNumberingHandler}
         onRemoveNumbering={removeNumberingHandler}
+        onReposition={repositionHandler}
         onRun={runProgramHandler}
         onSubOpen={openSubHandler}
       />
